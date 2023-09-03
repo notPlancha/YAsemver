@@ -1,0 +1,13 @@
+[package]
+name = "yasemver"
+description = "Yet Another (somewhat lenient) Semantic Versioning library"
+version = "0.1.0"
+edition = "2021"
+publish = true
+authors = ["notPlancha <Andre_Plancha@iscte-iul.pt>"]
+license = "CC BY 4.0"
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+peg = "0.8.1"
+thiserror = "1.0.48"
