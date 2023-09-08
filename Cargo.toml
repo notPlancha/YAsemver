@@ -6,8 +6,15 @@ edition = "2021"
 publish = true
 authors = ["notPlancha <Andre_Plancha@iscte-iul.pt>"]
 license = "CC BY 4.0"
+rust-version = "1.71.1"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-peg = "0.8.1"
-thiserror = "1.0.48"
+peg = "0.8"
+thiserror = "1.0"
+serde = { version = "1.0", optional = true, features = ["derive"] }
+serde_with = {version = "3.3", optional = true}
+radix = "0.6.0"
+
+[features]
+serde = ["dep:serde", "dep:serde_with"]

@@ -1,23 +1,17 @@
 mod implementations;
+#[cfg(test)]
 mod tests;
 
 use thiserror::Error;
-use crate::implementations::Range;
+use crate::implementations::{Version, Range, Op};
+pub type ParseError = peg::error::ParseError<peg::str::LineCol>;
 
-#[derive(Error, Debug, PartialEq, Eq)]
-pub enum ParseError {
-  #[error("error in parsing version")]
-  InvalidVersion(#[from] peg::error::ParseError<peg::str::LineCol>),
-  #[error("error in parsing range")]
-  InvalidRange(#[from] peg::error::ParseError<peg::str::LineCol>),
-}
 
 #[derive(Debug, PartialEq)]
 pub struct Dependency {
   pub name: String,
   pub range: Range
 }
-
 
 peg::parser!( pub grammar Parser() for str {
   pub rule parse_version() -> Version
@@ -32,7 +26,7 @@ peg::parser!( pub grammar Parser() for str {
         e,
         a.0,
         a.1
-      )
+      ).unwrap()
   }
   // pre and build any order and existence
   rule afterV() -> (Option<String>, Option<String>)
@@ -43,9 +37,8 @@ peg::parser!( pub grammar Parser() for str {
     = n:$(['0'..='9']+) {? n.parse().or(Err("number")) }
 
 
-
   rule chars() -> String
-    = n:$(['a'..='z' | 'A'..='Z' | '0'..='9' | '_' | '.']+) {? Ok(n.to_string())}
+    = n:$(['a'..='z' | 'A'..='Z' | '0'..='9' | '_' | '.']+) {? Ok(n.to_string().to_lowercase())}
 
 
   rule separator() -> ()
@@ -66,8 +59,12 @@ peg::parser!( pub grammar Parser() for str {
   rule pre() -> String
     = "-" c:chars() { c }
 
+  // TODO implement star version (1.0.*) if enough traffic
+  // TODO add support for *+build for things like *+windows
   pub rule parse_range() -> Range
-    = " "* r:(range() ** "") " "* ![_] { Range::from_ver_vec(r) }
+
+    = " "* "*" " "* ![_] { Range::any() }
+    / " "* r:(range() ** "") " "* ![_] { Range::from_ver_vec(r) }
 
   rule range() -> (Op, Version)
     = o:op() " "* v:version() " "* { (o,v) }
